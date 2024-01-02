@@ -1,0 +1,21 @@
+Wisielec
+
+Opis:
+
+Gracz łączy się do serwera i wysyła swój nick (jeśli jest zajęty lub za długi serwer prosi o podanie innego nicku).
+
+Po wprowadzeniu nicku gracz trafia do lobby, widzi aktualną liczbę pokoi gry i ilość graczy w każdym z nich, gracz może wejść do dowolnego pokoju lub wrócić z pokoju do lobby.
+
+Jeżeli gra już trwa gracz dołącza i zaczyna zgadywanie, jeżeli jeszcze nie trwa czeka na rozpoczęcie gry z innymi graczami w pokoju.
+
+Gra rozpoczyna się pod warunkiem dwóch graczy w pokoju, najdłużej przebywający w pokoju gracz może rozpocząć grę.
+
+Po rozpoczęciu gry serwer losuje słowo z bazy i wyświetla tyle belek ile jest liter.
+
+Gracze wysyłają swoje litery, otrzymują punkty za każdą odgadniętą zasada kto pierwszy ten lepszy, za błędną ich wisielec się wypełnia, gracze widzą swoje wisielce nawzajem, odsłaniające się hasło jest widoczne dla wszystkich.
+
+Po odgadnięciu hasła bądź upływie czasu serwer wybiera kolejne słowo i zeruje wisielce.
+
+Gra kończy się gdy w pokoju zostanie jeden gracz.
+
+Serwer cały czas wyświetla aktualny ranking.
