@@ -1,9 +1,15 @@
 package main.java;
 
+import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Random;
 
@@ -30,6 +36,27 @@ public class LobbyGUI extends JPanel {
             rooms[i] = new RoomInfo(i + 1, new Random().nextInt(10));
         }
 
+        //#TODO (zrobione) wykorzystaj te zapytania z metod aby stworzyć tablice z rooms na bazie klasy roomsInfo
+//        int availableRoomsCount = getAvailableRoomsCount();
+//
+//        // Przechowywanie informacji o pokojach
+//        RoomInfo[] rooms = new RoomInfo[availableRoomsCount];
+//
+//        // Pobieranie informacji o ilości graczy w każdym pokoju
+//        for (int i = 0; i < availableRoomsCount; i++) {
+//            int roomNumber = i + 1; // Numeracja pokojów zaczyna się od 1
+//
+//            // Pobieranie ilości graczy w danym pokoju
+//            int playersInRoom = getPlayersInRoom(roomNumber);
+//
+//            // Tworzenie obiektu RoomInfo dla danego pokoju
+//            RoomInfo roomInfo = new RoomInfo(roomNumber, playersInRoom);
+//
+//            // Dodawanie RoomInfo do tablicy rooms
+//            rooms[i] = roomInfo;
+//        }
+
+
         // Wyświetl przyciski dla każdego pokoju
         for (RoomInfo room : rooms) {
             JButton roomButton = new JButton("Pokój " + room.getRoomNumber() + " - Graczy: " + room.getNumPlayers());
@@ -50,12 +77,53 @@ public class LobbyGUI extends JPanel {
         frame.add(scrollPane);
         frame.setVisible(true);
     }
+
+    // Zapytanie o ilość dostępnych pokojów i graczy w nich
+    private int getAvailableRoomsCount() {
+        try {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            JSONObject jsonRequest = new JSONObject();
+            jsonRequest.put("command", "get_available_rooms_count");
+
+            out.println(jsonRequest.toString());
+
+            String response = in.readLine();
+            JSONObject jsonResponse = new JSONObject(response);
+            return jsonResponse.getInt("availableRooms");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0; // Obsługa błędu - zwracamy 0
+        }
+    }
+
+    private int getPlayersInRoom(int roomNumber) {
+        try {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            JSONObject jsonRequest = new JSONObject();
+            jsonRequest.put("command", "get_players_in_room");
+            jsonRequest.put("roomNumber", roomNumber);
+
+            out.println(jsonRequest.toString());
+
+            String response = in.readLine();
+            JSONObject jsonResponse = new JSONObject(response);
+            return jsonResponse.getInt("playersInRoom");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0; // Obsługa błędu - zwracamy 0
+        }
+    }
+
+
     private void joinRoom(int roomNumber) {
         // Tutaj możesz wywołać metodę dołączania do wybranego pokoju
         // np. otwarcie okna WisielecClientGUI dla danego pokoju
 //        WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username, socket);
         WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username);
-        //wisielecClientGUI.drawHangman(2);
         // Umożliwia przekazanie numeru pokoju do WisielecClientGUI,
         // aby serwer wiedział, który pokój obsłużyć
     }

@@ -17,6 +17,7 @@ public class LoginGUI extends JFrame {
     private JTextField usernameField;
     private JButton loginButton;
     private Socket socket;
+    PrintWriter out;
 
 //    public LoginGUI(Socket socket) {
 //        this.socket = socket;
@@ -41,10 +42,10 @@ public class LoginGUI extends JFrame {
                 if (username.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Proszę podać nick.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    //TODO obsługa zajętego nicku
-//                    if(!isUsernameExist(username)){
+                    //TODO (zrobione) obsługa zajętego nicku
+//                  //if(! doesUsernameExist(username)){
                     dispose(); // Zamknij okno logowania po zalogowaniu
-                        //new LobbyGUI(username, socket);
+                    //new LobbyGUI(username, socket);
                     LobbyGUI lobbyGUI = new LobbyGUI(username);
 
 //                    }
@@ -72,7 +73,7 @@ public class LoginGUI extends JFrame {
         }
     }
 
-    private boolean isUsernameExist(String username) {
+    private boolean doesUsernameExist(String username) {
         try {
             // Tworzymy obiekt PrintWriter do wysłania danych na serwer
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
