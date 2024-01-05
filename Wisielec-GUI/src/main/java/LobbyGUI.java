@@ -11,9 +11,10 @@ public class LobbyGUI extends JFrame {
     private JLabel usernameLabel;
     private String username;
     private Socket socket;
-    public LobbyGUI(String loginUsername, Socket socket) {
+//    public LobbyGUI(String loginUsername, Socket socket) {
+//        this.socket = socket;
+    public LobbyGUI(String loginUsername) {
         this.username = loginUsername;
-        this.socket = socket;
         setTitle("Lobby");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 750);
@@ -46,7 +47,8 @@ public class LobbyGUI extends JFrame {
     private void joinRoom(int roomNumber) {
         // Tutaj możesz wywołać metodę dołączania do wybranego pokoju
         // np. otwarcie okna WisielecClientGUI dla danego pokoju
-        WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username, socket);
+//        WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username, socket);
+        WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username);
         // Umożliwia przekazanie numeru pokoju do WisielecClientGUI,
         // aby serwer wiedział, który pokój obsłużyć
     }

@@ -19,8 +19,9 @@ public class WisielecClientGUI extends JFrame {
     private JButton guessButton;
     private JLabel usernameLabel;
     private Socket socket;
-    public WisielecClientGUI(int roomNumber, String username, Socket socket) {
-        this.socket = socket;
+//    public WisielecClientGUI(int roomNumber, String username, Socket socket) {
+//        this.socket = socket;
+    public WisielecClientGUI(int roomNumber, String username) {
         setTitle("Wisielec - Gra");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 750);

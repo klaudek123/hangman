@@ -18,8 +18,9 @@ public class LoginGUI extends JFrame {
     private JButton loginButton;
     private Socket socket;
 
-    public LoginGUI(Socket socket) {
-        this.socket = socket;
+//    public LoginGUI(Socket socket) {
+//        this.socket = socket;
+    public LoginGUI() {
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 750);
@@ -41,16 +42,33 @@ public class LoginGUI extends JFrame {
                     JOptionPane.showMessageDialog(null, "Proszę podać nick.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 } else {
                     //TODO obsługa zajętego nicku
-                    if(!isUsernameExist(username)){
+//                    if(!isUsernameExist(username)){
                         dispose(); // Zamknij okno logowania po zalogowaniu
-                        LobbyGUI lobbyGUI = new LobbyGUI(username, socket);
-                    }
+                        //new LobbyGUI(username, socket);
+                        new LobbyGUI(username);
+//                    }
                     JOptionPane.showMessageDialog(null, "Nick jest zajęty.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-
         setVisible(true);
+
+        // Dodanie WindowListener do obsługi zdarzenia zamknięcia okna
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                //closeWindow();
+            }
+        });
+        
+    }
+
+    private void closeWindow() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean isUsernameExist(String username) {

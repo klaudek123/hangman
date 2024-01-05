@@ -6,18 +6,17 @@ import java.net.Socket;
 
 public class Main {
     public static void main(String[] args) {
-        try {
-            Socket socket = new Socket("localhost", 12345); // Połączenie z serwerem na porcie 12345
+//        try {
+            //Socket socket = new Socket("localhost", 12345); // Połączenie z serwerem na porcie 12345
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    new LoginGUI(socket); // Uruchomienie interfejsu graficznego lobby
+                    //new LoginGUI(socket); // Uruchomienie interfejsu graficznego lobby
+                    new LoginGUI(); // Uruchomienie interfejsu graficznego lobby
                 }
             });
-            // Zamknięcie gniazda
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 }
