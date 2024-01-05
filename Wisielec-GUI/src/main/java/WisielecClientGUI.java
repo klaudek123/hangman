@@ -42,7 +42,7 @@ public class WisielecClientGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String guess = guessInputField.getText().trim();
-                out.println(guess); // Wysyłanie zgadywanej litery do serwera
+                //out.println(guess); // Wysyłanie zgadywanej litery do serwera
                 guessInputField.setText(""); // Czyszczenie pola po wysłaniu litery
                 guessInputField.requestFocus(); // Ustawienie fokusu na polu tekstowym po wysłaniu litery
             }
@@ -73,28 +73,28 @@ public class WisielecClientGUI extends JFrame {
         setVisible(true);
 
         // Inicjalizacja połączenia sieciowego
-        try {
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Wątek do odbierania aktualizacji stanu gry od serwera
-            Thread receivingThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String message;
-                    try {
-                        while ((message = in.readLine()) != null) {
-                            updateGameStatus(message); // Aktualizacja stanu gry na podstawie wiadomości od serwera
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            receivingThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            out = new PrintWriter(socket.getOutputStream(), true);
+//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//
+//            // Wątek do odbierania aktualizacji stanu gry od serwera
+//            Thread receivingThread = new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    String message;
+//                    try {
+//                        while ((message = in.readLine()) != null) {
+//                            updateGameStatus(message); // Aktualizacja stanu gry na podstawie wiadomości od serwera
+//                        }
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//            receivingThread.start();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void updateGameStatus(String statusMessage) {

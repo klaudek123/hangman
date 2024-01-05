@@ -47,7 +47,7 @@ public class LoginGUI extends JFrame {
                         //new LobbyGUI(username, socket);
                         new LobbyGUI(username);
 //                    }
-                    JOptionPane.showMessageDialog(null, "Nick jest zajęty.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
+                    //JOptionPane.showMessageDialog(null, "Nick jest zajęty.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
