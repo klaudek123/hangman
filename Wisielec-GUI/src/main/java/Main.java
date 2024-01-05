@@ -12,7 +12,8 @@ public class Main {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     //new LoginGUI(socket); // Uruchomienie interfejsu graficznego lobby
-                    new LoginGUI(); // Uruchomienie interfejsu graficznego lobby
+                    //new LoginGUI(); // Uruchomienie interfejsu graficznego lobby
+                    new WisielecClientGUI(3, "klaudek");
                 }
             });
 //        } catch (IOException e) {

@@ -43,9 +43,10 @@ public class LoginGUI extends JFrame {
                 } else {
                     //TODO obsługa zajętego nicku
 //                    if(!isUsernameExist(username)){
-                        dispose(); // Zamknij okno logowania po zalogowaniu
+                    dispose(); // Zamknij okno logowania po zalogowaniu
                         //new LobbyGUI(username, socket);
-                        new LobbyGUI(username);
+                    LobbyGUI lobbyGUI = new LobbyGUI(username);
+
 //                    }
                     //JOptionPane.showMessageDialog(null, "Nick jest zajęty.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 }

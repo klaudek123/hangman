@@ -5,8 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.Socket;
+import java.util.Random;
 
-public class LobbyGUI extends JFrame {
+public class LobbyGUI extends JPanel {
     private JButton[] roomButtons;
     private JLabel usernameLabel;
     private String username;
@@ -15,43 +16,69 @@ public class LobbyGUI extends JFrame {
 //        this.socket = socket;
     public LobbyGUI(String loginUsername) {
         this.username = loginUsername;
-        setTitle("Lobby");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 750);
-        setLayout(new FlowLayout());
+        setLayout(new GridLayout(0, 4, 10, 10)); // GridLayout z 4 kolumnami
 
-        usernameLabel = new JLabel("Użytkownik: " + username);
-        usernameLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        add(usernameLabel, BorderLayout.NORTH);
+        // Pobierz aktualną listę pokojów z serwera
+        // Tutaj możesz wykorzystać swoją logikę do pobrania informacji o pokojach z serwera
+        // Może to być tablica obiektów reprezentujących pokoje
 
-        //TODO odpytywanie serwera o ilość pokojów
-        int numberOfRooms = 4; // Przykładowa liczba pokojów
-        roomButtons = new JButton[numberOfRooms];
+        // Przykładowe informacje o pokojach (do zastąpienia logiką pobierającą z serwera)
+        RoomInfo[] rooms = new RoomInfo[120]; // Tworzenie tablicy na 12 pokojów
 
-        // Tworzenie przycisków dla pokojów
-        for (int i = 0; i < numberOfRooms; i++) {
-            roomButtons[i] = new JButton("Pokój " + (i + 1));
-            final int roomNumber = i + 1;
-            roomButtons[i].addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    joinRoom(roomNumber); // Metoda dołączania do pokoju
-                }
-            });
-            add(roomButtons[i]);
+        // Inicjalizacja 12 pokojów z losową liczbą graczy
+        for (int i = 0; i < 120; i++) {
+            rooms[i] = new RoomInfo(i + 1, new Random().nextInt(10));
         }
 
-        setVisible(true);
+        // Wyświetl przyciski dla każdego pokoju
+        for (RoomInfo room : rooms) {
+            JButton roomButton = new JButton("Pokój " + room.getRoomNumber() + " - Graczy: " + room.getNumPlayers());
+            roomButton.addActionListener(e -> joinRoom(room.getRoomNumber()));
+            add(roomButton);
+        }
+        createAndShowGUI();
     }
 
+
+    public void createAndShowGUI() {
+        JScrollPane scrollPane = new JScrollPane(this);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        JFrame frame = new JFrame("Lobby");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(1000, 750);
+        frame.add(scrollPane);
+        frame.setVisible(true);
+    }
     private void joinRoom(int roomNumber) {
         // Tutaj możesz wywołać metodę dołączania do wybranego pokoju
         // np. otwarcie okna WisielecClientGUI dla danego pokoju
 //        WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username, socket);
         WisielecClientGUI wisielecClientGUI = new WisielecClientGUI(roomNumber, username);
+        //wisielecClientGUI.drawHangman(2);
         // Umożliwia przekazanie numeru pokoju do WisielecClientGUI,
         // aby serwer wiedział, który pokój obsłużyć
     }
 
 
 }
+
+// Klasa reprezentująca informacje o pokoju
+ class RoomInfo {
+    private int roomNumber;
+    private int numPlayers;
+
+    public RoomInfo(int roomNumber, int numPlayers) {
+        this.roomNumber = roomNumber;
+        this.numPlayers = numPlayers;
+    }
+
+    public int getRoomNumber() {
+        return roomNumber;
+    }
+
+    public int getNumPlayers() {
+        return numPlayers;
+    }
+}
+
