@@ -12,11 +12,17 @@ class Game
 private:
     std::unordered_map<int, Room> gameRooms; // Mapa przechowująca pokoje gry, klucz to numer pokoju
     std::string wordToGuess;
+    std::unordered_map<std::string, Player> playersMap;
 public:
     Game();
     ~Game();
-    void addPlayerToRoom(int roomId, const Player& newPlayer);
+    bool addPlayerToRoom(int roomId, Player* player);
     std::string getWordToGuess();
+    std::unordered_map<int, Room>& getGameRooms();
+    void addPlayertoMap(const std::string& username, const Player& player);
+    Player* getPlayerByUsername(const std::string& username);
+    bool removePlayerFromRoom(int roomId, Player* player);
+    void createNewRoom(const Player& player);
     void setWordToGuess(std::string word);
     void guessLetter(Player player, char letter);
     void updateGameState();
