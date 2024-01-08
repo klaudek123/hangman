@@ -12,13 +12,13 @@ private:
     std::string name;
     int score;
     int hangmanState;
+    int socket;
     static std::unordered_set<std::string> allPlayerNames; // Przechowuje unikalne nazwy graczy
     // Dodaj dodatkowe pola, np. punktację, stan wisielca itp.
 public:
-    Player();
+    Player(const std::string& playerName, int playerSocket);
     ~Player();
-    Player(const std::string& playerName);
-    std::string getName();
+    std::string getName() const;
     int getScore();
     void updateScore(int points);
     int getHangmanState();
