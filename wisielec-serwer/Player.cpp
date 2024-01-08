@@ -1,5 +1,7 @@
 #include "Player.h"
 
+std::unordered_set<std::string> Player::allPlayerNames;
+
 Player::Player(const std::string& playerName, int playerSocket) : name(playerName), score(0), hangmanState(0), socket(playerSocket)
 {
 
