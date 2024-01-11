@@ -85,21 +85,7 @@ int main() {
         if (numEvents == -1) {
             perror("Błąd epoll_wait()");
             exit(EXIT_FAILURE);
-        }/* logika sprawdzajca czy pokoje sa pelne aby dodac nowy pokoj,
- * imo dalbym konstruktor nowego pokoju w Game zeby dzialalo na przycsik ze dodaje nowy pokoj jak tylko bedziesz chcial
-        bool allRoomsFull = true;
-        std::unordered_map<int, Room>& rooms = game.getGameRooms();
-        for(const auto& pair : rooms){
-            if (pair.second.getNumPlayers()){
-                allRoomsFull = false;
-                break;
-            }
         }
-        *//*if(allRoomsFull){
-            int newRoomId = rooms.size() + 1;
-            Room newRoom(newRoomId);
-            rooms[newRoomId] = newRoom;
-        }*/
           for (int i = 0; i < numEvents; ++i) {
             if (events[i].data.fd == sockfd) {
                 // Obsługa nowego połączenia
@@ -209,7 +195,6 @@ int main() {
                             failEnterResponse["message"] = "Nie udalo sie dolaczyc do pokoju";
                             std::string response = failEnterResponse.toStyledString();
                             send(events[i].data.fd, response.c_str(), response.length(), 0);
-
                         }
 
 
@@ -230,8 +215,10 @@ int main() {
                     }else {
                         Player* currentPlayer = game.getPlayerByUsername(username);
                         int roomId = currentPlayer->getRoomId();
-                        if(game.removePlayerFromRoom(roomId,currentPlayer)){
+                        if(game.removePlayerFromRoom(roomId,currentPlayer)) {
                             currentPlayer->setRoomId(0);
+                            currentPlayer->resetScore();
+                            currentPlayer->resetHangmanState();
                             Json::Value LeaveRoomResponse;
                             LeaveRoomResponse["command"] = "leave_room";
                             LeaveRoomResponse["usermane"] = username;
@@ -239,6 +226,23 @@ int main() {
                             LeaveRoomResponse["message"] = "Usunieto gracza z pokoju";
                             std::string response = LeaveRoomResponse.toStyledString();
                             send(events[i].data.fd, response.c_str(), response.length(), 0);
+                            Room *room = game.getRoomById(roomId);
+                            if (room->getNumPlayers() < 2) {
+
+                                if (room->getState()) {
+                                    std::vector<Player> playersInRoom = room->getPlayers();
+                                    for (const auto& player: playersInRoom) {
+                                        std::string gracz = player.getName();
+                                        Json::Value endResponse;
+                                        endResponse["command"] = "end_game";
+                                        endResponse["username"] = gracz;
+                                        std::string respon = endResponse.toStyledString();
+                                        send(player.getSocket(), response.c_str(), response.length(), 0);
+                                    }
+                                    room->changeState(false);
+                                }
+
+                            }
                         }
                         Json::Value failLeaveResponse;
                         failLeaveResponse["command"] = "leave_room";
@@ -269,6 +273,11 @@ int main() {
                     }else {
                         std::string word = game.getWordToGuess();
                         room->setWord(word);
+                        auto now = std::chrono::system_clock::now();
+                        std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+                        std::string current_time_str = std::ctime(&current_time);
+                        current_time_str.pop_back();
+                        room->changeState(true);
                         for (const auto& player: playersInRoom) {
                             std::string gracz = player.getName();
                             Json::Value startResponse;
@@ -277,6 +286,7 @@ int main() {
                             startResponse["succes"] = true;
                             startResponse["message"] = "Gra rozpoczeta";
                             startResponse["word"] = word;
+                            startResponse["current_time"] = current_time_str;
                             std::string response = startResponse.toStyledString();
                             send(player.getSocket(), response.c_str(), response.length(), 0);
                         }
@@ -301,7 +311,7 @@ int main() {
                             /*juz zgadnieta*/
                         currentPlayer->updateHangmanState();
                         }
-                    if(currentPlayer->getHangmanState()> 8){
+                    if(currentPlayer->getHangmanState() > 8){
                         currentPlayer->updateScore(-3);
                         currentPlayer->resetHangmanState();
                     }
@@ -316,15 +326,14 @@ int main() {
 
                     std::vector<Player> playersInRoom = room->getPlayers();
                     Json::Value playersInfo(Json::arrayValue);
-                    Json::Value guessedResponse;
-                    guessedResponse["command"] = "guessed_letter";
+
                     if(slowo){
                         for(auto& player : playersInRoom){
                             player.resetHangmanState();
                         }
                         std::string new_word = game.getWordToGuess();
                         room->setWord(new_word);
-                        guessedResponse["word"] = new_word;
+
                     }
                     for (const auto& gracze: playersInRoom){
                         Json::Value graczInfo;
@@ -335,6 +344,8 @@ int main() {
                     }
                     for (const auto& player: playersInRoom) {
 
+                        Json::Value guessedResponse;
+                        guessedResponse["command"] = "guessed_letter";
                         std::string gracz = player.getName();
                         guessedResponse["username"] = gracz;
                         guessedResponse["succes"] = true;
@@ -376,34 +387,46 @@ int main() {
                     send(events[i].data.fd, response.c_str(), response.length(), 0);
 
                 }
-                if(command == "new_room"){
-                    std::string username = jsonData["username"].asString();
-                    game.createNewRoom();
-                    Json::Value newroomresponse;
-                    newroomresponse["command"] = "new_room";
-                    newroomresponse["username"] = username;
-                    newroomresponse["succes"] = true;
-                    newroomresponse["message"] = "Utworzono nowy pokoj";
-                    std::string response = newroomresponse.toStyledString();
-                    send(events[i].data.fd, response.c_str(), response.length(), 0);
-                }
                 if(command == "get_players_in_lobby"){
+                    int roomid =jsonData["room_id"].asInt();
                     std::string username = jsonData["username"].asString();
+                    Room* room = game.getRoomById(roomid);
+                    int amount = room->getNumPlayers();
                     Json::Value playersLobbyresponse;
                     playersLobbyresponse["command"] = "get_players_in_lobby";
                     playersLobbyresponse["username"] = username;
-                    Json::Value jsonRooms;
-                    for(const auto& pair : game.getGameRooms()){
-                        int roomId = pair.first;
-                        int numPlayers = pair.second.getNumPlayers();
-                        Json::Value jsonRoom;
-                        jsonRoom["room_id"] = roomId;
-                        jsonRoom["num_players"] = numPlayers;
-                        jsonRooms.append(jsonRoom);
-                    }
-                    playersLobbyresponse["room_players"] = jsonRooms;
+                    playersLobbyresponse["num_players"] = amount;
                     std::string response = playersLobbyresponse.toStyledString();
                     send(events[i].data.fd, response.c_str(), response.length(), 0);
+                }
+                if(command == "time_end"){
+                    std::string username = jsonData["username"].asString();
+                    Player* currentPlayer = game.getPlayerByUsername(username);
+                    int roomId = currentPlayer->getRoomId();
+                    Room* room = game.getRoomById(roomId);
+                    if(room->getFirstPlayer()==username){
+                        std::string word = game.getWordToGuess();
+                        room->setWord(word);
+                        auto now = std::chrono::system_clock::now();
+                        std::time_t current_time = std::chrono::system_clock::to_time_t(now);
+                        std::string current_time_str = std::ctime(&current_time);
+                        current_time_str.pop_back();
+                        std::vector<Player> playersInRoom = room->getPlayers();
+                        for (const auto& player: playersInRoom) {
+                            std::string gracz = player.getName();
+                            Json::Value startResponse;
+                            startResponse["command"] = "time_end";
+                            startResponse["username"] = gracz;
+                            startResponse["word"] = word;
+                            startResponse["current_time"] = current_time_str;
+                            std::string response = startResponse.toStyledString();
+                            send(player.getSocket(), response.c_str(), response.length(), 0);
+                        }
+
+
+                    }
+
+
                 }
 
             }
