@@ -8,7 +8,12 @@ Room::~Room() {};
 void Room::addPlayer(const Player& newPlayer) {
     players.push_back(newPlayer);
 }
-
+bool Room::getState() const {
+    return state;
+}
+void Room::changeState(bool gra) {
+    state = gra;
+}
 int Room::getNumPlayers()const {
     return players.size();
 }
