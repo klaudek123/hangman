@@ -1,4 +1,9 @@
 #include "Game.h"
+#include <fstream>
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+
 
 Game::Game()
 {
@@ -19,6 +24,14 @@ Player* Game::getPlayerByUsername(const std::string& username){
         return &(it->second);
     }
     return nullptr;
+}
+Room* Game::getRoomById(int roomId) {
+    auto it = gameRooms.find(roomId);
+    if(it != gameRooms.end()){
+        return &(it->second);
+    }else{
+        return 0;
+    }
 }
 bool Game::addPlayerToRoom(int roomId, Player* player) {
     if(player)
@@ -43,9 +56,6 @@ std::unordered_map<int,Room>&Game::getGameRooms(){
 void Game::addPlayertoMap(const std::string& username, const Player& player){
     playersMap.insert({username, player});
 }
-std::string Game::getWordToGuess() {
-    return wordToGuess;
-}
 void Game::createNewRoom(const Player& player){
     int newRoomId = gameRooms.size() + 1;
     Room newRoom;
@@ -54,9 +64,25 @@ void Game::createNewRoom(const Player& player){
 
 
 }
-
-void Game::setWordToGuess(std::string word) {
-    wordToGuess = word;
+std::string Game::getWordToGuess() {
+    std::ifstream file("slowa.txt");
+    if(!file.is_open()){
+        return 0;
+    }
+    int w = 115;
+    srand(static_cast<unsigned int>(time(nullptr)));
+    int rnd = rand() % w;
+    int curr = 0;
+    std::string word;
+    std::string line;
+    while(std::getline(file, line)){
+        if(curr == rnd){
+            word = line;
+        }
+        curr++;
+    }
+    file.close();
+    return word;
 }
 
 void Game::guessLetter(Player player, char letter) {
