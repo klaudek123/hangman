@@ -147,17 +147,13 @@ int main() {
                 }
 
                 std::string command = jsonData["command"].asString();
-                if (command == "register") {
+                if (command == "Register") {
                     std::string username = jsonData["username"].asString();
-                    // Tutaj dodaj kod, który sprawdzi istnienie gracza o nazwie "username"
-                    // i wyśle odpowiedź w formie JSON
 
-
-                    // Tu uzupełnij odpowiedź w formie JSON
                     if(!Player::doesPlayerExist(username)){
                         Player newPlayer(username,events[i].data.fd);
                         game.addPlayertoMap(username,newPlayer);
-                        Player::addNewPlayer(username);
+                        Player::addNewPlayer(username); //po co nie wiem do sprawdzenia
                         Json::Value addresponse;
                         addresponse["succes"] = true;
                         addresponse["message"] = "Nowy gracz dodany do gry";
@@ -183,28 +179,34 @@ int main() {
                     bool playerExist = Player::doesPlayerExist(username);
                     if(!playerExist){
                         Json::Value errorResponse;
-                        errorResponse["error"] = "Gracz nie istnieje";
                         errorResponse["succes"] = false;
+                        errorResponse["message"] = "Gracz nie istnieje";
                         std::string response = errorResponse.toStyledString();
                         send(events[i].data.fd, response.c_str(), response.length(), 0);
                     }else {
                         Player* currentPlayer = game.getPlayerByUsername(username);
+                        //currentPlayer->setRoomId(roomId);
                         if(game.addPlayerToRoom(roomId,currentPlayer)){
-                            Json::Value succesResponse;
-                            succesResponse["succes"] = true;
-                            std::string response = succesResponse.toStyledString();
+                            currentPlayer->setRoomId(roomId);
+                            Json::Value SuccesEnterResponse;
+                            SuccesEnterResponse["succes"] = true;
+                            SuccesEnterResponse["message"] = "Dolaczono do pokoju";
+                            std::string response = SuccesEnterResponse.toStyledString();
                             send(events[i].data.fd, response.c_str(), response.length(), 0);
+                        }else{
+                            Json::Value failEnterResponse;
+                            failEnterResponse["succes"] = false;
+                            failEnterResponse["message"] = "Nie udalo sie dolaczyc do pokoju";
+                            std::string response = failEnterResponse.toStyledString();
+                            send(events[i].data.fd, response.c_str(), response.length(), 0);
+
                         }
-                        Json::Value errorResponse;
-                        errorResponse["succes"] = false;
-                        std::string response = errorResponse.toStyledString();
-                        send(events[i].data.fd, response.c_str(), response.length(), 0);
+
 
                     }
 
                 }
                 if(command == "Leave_Room"){
-                    int roomId = jsonData["roomID"].asInt();
                     std::string username = jsonData["username"].asString();
                     bool playerExist = Player::doesPlayerExist(username);
                     if(!playerExist){
@@ -215,25 +217,101 @@ int main() {
                         send(events[i].data.fd, response.c_str(), response.length(), 0);
                     }else {
                         Player* currentPlayer = game.getPlayerByUsername(username);
+                        int roomId = currentPlayer->getRoomId();
                         if(game.removePlayerFromRoom(roomId,currentPlayer)){
-                            Json::Value succesResponse;
-                            succesResponse["succes"] = true;
-                            std::string response = succesResponse.toStyledString();
+                            currentPlayer->setRoomId(0);
+                            Json::Value LeaveRoomResponse;
+                            LeaveRoomResponse["succes"] = true;
+                            std::string response = LeaveRoomResponse.toStyledString();
                             send(events[i].data.fd, response.c_str(), response.length(), 0);
                         }
-                        Json::Value errorResponse;
-                        errorResponse["error"] = "Nie udalo sie dolaczyc do pokoju";
-                        errorResponse["succes"] = false;
-                        std::string response = errorResponse.toStyledString();
+                        Json::Value failLeaveResponse;
+                        failLeaveResponse["error"] = "Nie udalo sie opuscic do pokoju";
+                        failLeaveResponse["succes"] = false;
+                        std::string response = failLeaveResponse.toStyledString();
                         send(events[i].data.fd, response.c_str(), response.length(), 0);
 
                     }
 
                 }
                 if(command == "Start_Game"){
-                    int roomId = jsonData["roomID"].asInt();
+                    std::string username = jsonData["username"].asString();
+                    Player* currentPlayer = game.getPlayerByUsername(username);
+                    int roomId = currentPlayer->getRoomId();
+                    Room* room = game.getRoomById(roomId);
+                    std::vector<Player> playersInRoom = room->getPlayers();
+                    if(room->getNumPlayers()<2 or room->getFirstPlayer()!=username){
+                        Json::Value FailStartResponse;
+                        FailStartResponse["Succes"] = false;
+                        FailStartResponse["message"] = "Nie mona uruchomi c ";
+                        std::string response = FailStartResponse.toStyledString();
+                        send(events[i].data.fd, response.c_str(), response.length(), 0);
 
-                }
+                    }else {
+                        std::string word = game.getWordToGuess();
+                        room->setWord(word);
+                        for (const auto& player: playersInRoom) {
+
+                            Json::Value startResponse;
+                            startResponse["Game"] = true;
+                            startResponse["Word"] = word;
+                            std::string response = startResponse.toStyledString();
+                            send(player.getSocket(), response.c_str(), response.length(), 0);
+                        }
+                    }
+                    }
+                if(command =="Guessed_letter"){
+                    std::string username = jsonData["username"].asString();
+                    std::string ltr = jsonData["letter"].asString();
+                    char letter = ltr[0];
+
+
+                    Player* currentPlayer = game.getPlayerByUsername(username);
+                    int roomId = currentPlayer->getRoomId();
+                    Room* room = game.getRoomById(roomId);
+                    std::string word = room->getWord();
+                    if(!room->isLetterGuessed(letter)){
+                        if(word.find(letter)!= std::string::npos) {
+                            currentPlayer->updateScore();
+                            /*wiadomocs o sukcesie*/
+
+
+                        }else{
+                            currentPlayer->updateHangmanState();
+                        }
+                        room->addGuessedLetter(letter);
+                    }else{
+                            /*juz zgadnieta*/
+                        currentPlayer->updateHangmanState();
+                        }
+                    bool slowo = true;
+
+                    std::unordered_set<char> letters = room->getGuessed();
+                    for(char ltr : word ){
+                        if(ltr != ' ' && letters.find(ltr) == letters.end()){
+                            slowo = false;
+                            break;
+                        }
+                    }
+                    if(slowo){
+                        std::vector<Player> playersInRoom = room->getPlayers();
+                        std::string word = game.getWordToGuess();
+                        room->setWord(word);
+                        for(auto& player : playersInRoom){
+                            player.resetHangmanState();
+                            Json::Value startresponse;
+                            startresponse["New_word"] = true;
+                            startresponse["Word"] = word;
+                            std::string response = startresponse.toStyledString();
+                            send(player.getSocket(), response.c_str(), response.length(), 0);
+                        }
+                    if(currentPlayer->getHangmanState()> 8){
+                        
+                    }
+                    }
+                    }
+
+
             }
         }
     }
