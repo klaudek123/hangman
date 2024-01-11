@@ -20,15 +20,15 @@ void Player::setRoomId(int roomID) {
 int Player::getSocket() const {
     return socket;
 }
-int Player::getScore() {
+int Player::getScore() const {
     return score;
 }
 
-void Player::updateScore() {
-    score += 1;
+void Player::updateScore(int points) {
+    score += points;
 }
 
-int Player::getHangmanState() {
+int Player::getHangmanState() const{
     return hangmanState;
 }
 
