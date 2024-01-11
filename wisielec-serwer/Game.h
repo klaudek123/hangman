@@ -21,11 +21,12 @@ public:
     std::unordered_map<int, Room>& getGameRooms();
     void addPlayertoMap(const std::string& username, const Player& player);
     Player* getPlayerByUsername(const std::string& username);
+    Room* getRoomById(int roomId);
     bool removePlayerFromRoom(int roomId, Player* player);
     void createNewRoom(const Player& player);
-    void setWordToGuess(std::string word);
     void guessLetter(Player player, char letter);
     void updateGameState();
+
 
 };
 
