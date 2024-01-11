@@ -36,10 +36,8 @@ Room* Game::getRoomById(int roomId) {
 bool Game::addPlayerToRoom(int roomId, Player* player) {
     if(player)
     {
-        if(gameRooms[roomId].getNumPlayers()<10){
-            gameRooms[roomId].addPlayer(*player);
-            return true;
-        }
+        gameRooms[roomId].addPlayer(*player);
+        return true;
     }
     return false;
 }
