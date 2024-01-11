@@ -14,10 +14,13 @@ private:
     std::string wordtoguess;
     std::vector<Player> players;
     std::unordered_set<char> guessedLetters;
+    bool state = 0;
     // Dodaj pola związane z grą, np. słowo, stan wisielca itp.
 public:
     Room();
     ~Room();
+    bool getState()const;
+    void changeState(bool gra);
     void addPlayer(const Player& player);
     std::string getFirstPlayer() const;
     bool isLetterGuessed(char letter) const;
