@@ -9,7 +9,9 @@ Player::~Player()
 {
 
 }
-
+void Player::resetScore() {
+    score = 0;
+}
 std::string Player::getName() const
 {
     return name;
