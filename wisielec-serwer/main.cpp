@@ -387,6 +387,24 @@ int main() {
                     std::string response = newroomresponse.toStyledString();
                     send(events[i].data.fd, response.c_str(), response.length(), 0);
                 }
+                if(command == "get_players_in_lobby"){
+                    std::string username = jsonData["username"].asString();
+                    Json::Value playersLobbyresponse;
+                    playersLobbyresponse["command"] = "get_players_in_lobby";
+                    playersLobbyresponse["username"] = username;
+                    Json::Value jsonRooms;
+                    for(const auto& pair : game.getGameRooms()){
+                        int roomId = pair.first;
+                        int numPlayers = pair.second.getNumPlayers();
+                        Json::Value jsonRoom;
+                        jsonRoom["room_id"] = roomId;
+                        jsonRoom["num_players"] = numPlayers;
+                        jsonRooms.append(jsonRoom);
+                    }
+                    playersLobbyresponse["room_players"] = jsonRooms;
+                    std::string response = playersLobbyresponse.toStyledString();
+                    send(events[i].data.fd, response.c_str(), response.length(), 0);
+                }
 
             }
         }
