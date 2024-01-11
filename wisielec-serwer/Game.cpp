@@ -56,13 +56,10 @@ std::unordered_map<int,Room>&Game::getGameRooms(){
 void Game::addPlayertoMap(const std::string& username, const Player& player){
     playersMap.insert({username, player});
 }
-void Game::createNewRoom(const Player& player){
+void Game::createNewRoom(){
     int newRoomId = gameRooms.size() + 1;
     Room newRoom;
     gameRooms[newRoomId] = newRoom;
-    newRoom.addPlayer(player);
-
-
 }
 std::string Game::getWordToGuess() {
     std::ifstream file("slowa.txt");
@@ -84,11 +81,9 @@ std::string Game::getWordToGuess() {
     file.close();
     return word;
 }
-
-void Game::guessLetter(Player player, char letter) {
-    // Logika zgadnięcia litery przez gracza
+int Game::getRoomsCount() const {
+    return gameRooms.size();
 }
-
 void Game::updateGameState() {
     // Logika aktualizacji stanu gry po każdym ruchu gracza
 }
