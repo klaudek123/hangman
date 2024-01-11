@@ -22,6 +22,7 @@ public:
     std::string getName() const;
     int getScore()const;
     int getRoomId();
+    void resetScore();
     void setRoomId(int roomId);
     int getSocket() const;
     void updateScore(int points);
