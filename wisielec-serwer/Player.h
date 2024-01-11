@@ -20,13 +20,13 @@ public:
     Player(const std::string& playerName, int playerSocket);
     ~Player();
     std::string getName() const;
-    int getScore();
+    int getScore()const;
     int getRoomId();
     void setRoomId(int roomId);
     int getSocket() const;
-    void updateScore();
+    void updateScore(int points);
     void resetHangmanState();
-    int getHangmanState();
+    int getHangmanState() const;
     void updateHangmanState();
     static bool addNewPlayer(const std::string& playerName);
     static bool doesPlayerExist(const std::string& playerName);
