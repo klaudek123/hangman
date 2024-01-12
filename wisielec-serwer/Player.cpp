@@ -40,18 +40,13 @@ void Player::updateHangmanState() {
 void Player::resetHangmanState(){
     hangmanState = 0;
 }
-bool Player::addNewPlayer(const std::string &playerName)
-{
-    if (allPlayerNames.count(playerName) == 0) {
-        allPlayerNames.insert(playerName);
-        return true;
-    }
-    return false;
+void Player::updateTime() {
+    lastrequest = std::chrono::steady_clock::now();
 }
+std::chrono::steady_clock::time_point Player::getTime() const {
+    return lastrequest;
+}
+
 int Player::getRoomId(){
     return roomId;
-}
-bool Player::doesPlayerExist(const std::string &playerName)
-{
-    return allPlayerNames.count(playerName) > 0;
 }
