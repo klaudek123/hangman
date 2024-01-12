@@ -11,6 +11,9 @@ void Room::addPlayer(const Player& newPlayer) {
 bool Room::getState() const {
     return state;
 }
+void Room::dropGuessed(){
+    guessedLetters.clear();
+};
 void Room::changeState(bool gra) {
     state = gra;
 }
@@ -42,10 +45,11 @@ void Room::removePlayer(const Player& playertoRemove) {
     {return &player == &playertoRemove; }) ,
     players.end());
 }
-
-
-void Room::startGame() {
-
+void Room::updateTime() {
+    generationtime = std::chrono::steady_clock::now();
+}
+std::chrono::steady_clock::time_point Room::getTime() const {
+    return generationtime;
 }
 void Room::setWord(std::string word) {
     wordtoguess = word;
@@ -55,4 +59,7 @@ const std::vector<Player>& Room::getPlayers() const {
 }
 void Room::endGame() {
     // Logika zakończenia gry w pokoju
+}
+void Room::startGame() {
+
 }
