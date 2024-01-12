@@ -428,6 +428,26 @@ int main() {
 
 
                 }
+                if(command  == "get_room_player_info"){
+                    std::string username = jsonData["username"].asString();
+                    Player* currentPlayer = game.getPlayerByUsername(username);
+                    int roomId = currentPlayer->getRoomId();
+                    Room* room = game.getRoomById(roomId);
+                    std::vector<Player> playersInRoom = room->getPlayers();
+                    Json::Value playersInfores;
+                    Json::Value playersInfo(Json::arrayValue);
+                      for (const auto& player: playersInRoom) {
+                        Json::Value graczInfo;
+                        graczInfo["username"] = player.getName();
+                        graczInfo["score"] = player.getScore();
+                        graczInfo["hangman_state"] = player.getHangmanState();
+                        playersInfo.append(graczInfo);
+                    }
+                    playersInfores["command"] = "get_players_in_room";
+                    playersInfores["username"] = username;
+                    playersInfores["info"] = playersInfo;
+                    std::string response = playersInfores.toStyledString();
+                    send(events[i].data.fd, response.c_str(), response.length(), 0);
 
             }
         }
