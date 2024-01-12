@@ -24,8 +24,10 @@ public:
     Player* getPlayerByUsername(const std::string& username);
     Room* getRoomById(int roomId);
     bool removePlayerFromRoom(int roomId, Player* player);
+    bool doesPlayerexist(const std::string username)const;
     void createNewRoom();
     void updateGameState();
+    void checkandremove();
 
 
 };
