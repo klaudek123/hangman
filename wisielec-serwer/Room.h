@@ -6,6 +6,7 @@
 #include "Player.h"
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 class Room
 {
@@ -14,12 +15,16 @@ private:
     std::string wordtoguess;
     std::vector<Player> players;
     std::unordered_set<char> guessedLetters;
-    bool state = 0;
+    int state;
+    std::chrono::steady_clock::time_point generationtime;
     // Dodaj pola związane z grą, np. słowo, stan wisielca itp.
 public:
     Room();
     ~Room();
     bool getState()const;
+    void updateTime();
+    std::chrono::steady_clock::time_point getTime()const;
+    void dropGuessed();
     void changeState(bool gra);
     void addPlayer(const Player& player);
     std::string getFirstPlayer() const;
