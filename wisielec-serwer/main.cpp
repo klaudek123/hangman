@@ -136,10 +136,9 @@ int main() {
                 if(command == "register") {
                     std::string username = jsonData["username"].asString();
 
-                    if(!Player::doesPlayerExist(username)){
+                    if(!game.doesPlayerexist(username)){
                         Player newPlayer(username,events[i].data.fd);
                         game.addPlayertoMap(username,newPlayer);
-                        Player::addNewPlayer(username); //po co nie wiem do sprawdzenia
                         Json::Value addresponse;
                         addresponse["command"] = "register";
                         addresponse["username"] = username;
@@ -230,14 +229,11 @@ int main() {
                             if (room->getNumPlayers() < 2) {
 
                                 if (room->getState()) {
+                                    room->setWord("");
                                     std::vector<Player> playersInRoom = room->getPlayers();
-                                    for (const auto& player: playersInRoom) {
-                                        std::string gracz = player.getName();
-                                        Json::Value endResponse;
-                                        endResponse["command"] = "end_game";
-                                        endResponse["username"] = gracz;
-                                        std::string respon = endResponse.toStyledString();
-                                        send(player.getSocket(), response.c_str(), response.length(), 0);
+                                    for (auto player: playersInRoom) {
+                                        player.resetHangmanState();
+                                        player.resetScore();
                                     }
                                     room->changeState(false);
                                 }
@@ -273,23 +269,16 @@ int main() {
                     }else {
                         std::string word = game.getWordToGuess();
                         room->setWord(word);
-                        auto now = std::chrono::system_clock::now();
-                        std::time_t current_time = std::chrono::system_clock::to_time_t(now);
-                        std::string current_time_str = std::ctime(&current_time);
-                        current_time_str.pop_back();
+                        room->updateTime();
                         room->changeState(true);
-                        for (const auto& player: playersInRoom) {
-                            std::string gracz = player.getName();
-                            Json::Value startResponse;
-                            startResponse["command"] = "start_game";
-                            startResponse["username"] = gracz;
-                            startResponse["succes"] = true;
-                            startResponse["message"] = "Gra rozpoczeta";
-                            startResponse["word"] = word;
-                            startResponse["current_time"] = current_time_str;
-                            std::string response = startResponse.toStyledString();
-                            send(player.getSocket(), response.c_str(), response.length(), 0);
-                        }
+                        Json::Value startResponse;
+                        startResponse["command"] = "start_game";
+                        startResponse["username"] = username;
+                        startResponse["succes"] = true;
+                        startResponse["message"] = "Gra rozpoczeta";
+                        room->setWord(word);
+                        std::string response = startResponse.toStyledString();
+                        send(events[i].data.fd, response.c_str(), response.length(), 0);
                     }
                     }
                 if(command == "guessed_letter"){
@@ -300,16 +289,25 @@ int main() {
                     int roomId = currentPlayer->getRoomId();
                     Room* room = game.getRoomById(roomId);
                     std::string word = room->getWord();
+                    Json::Value addresponse;
+                    addresponse["command"] = "guessed_letter";
+                    addresponse["username"] = username;
                     if(!room->isLetterGuessed(letter)){
                         if(word.find(letter)!= std::string::npos) {
                             currentPlayer->updateScore(1);
+                            addresponse["succes"] = true;
+                            addresponse["message"] = "Ta Literka jest w slaowie";
                         }else{
                             currentPlayer->updateHangmanState();
+                            addresponse["succes"] = false;
+                            addresponse["message"] = "Nie ma tej lierki w slowie";
                         }
                         room->addGuessedLetter(letter);
                     }else{
                             /*juz zgadnieta*/
                         currentPlayer->updateHangmanState();
+                        addresponse["succes"] = false;
+                        addresponse["message"] = "Ta literka jest juz zgadnieta";
                         }
                     if(currentPlayer->getHangmanState() > 8){
                         currentPlayer->updateScore(-3);
@@ -331,29 +329,15 @@ int main() {
                         for(auto& player : playersInRoom){
                             player.resetHangmanState();
                         }
+                        room->dropGuessed();
                         std::string new_word = game.getWordToGuess();
                         room->setWord(new_word);
-
+                        room->updateTime();
                     }
-                    for (const auto& gracze: playersInRoom){
-                        Json::Value graczInfo;
-                        graczInfo["username"] = gracze.getName();
-                        graczInfo["score"] = gracze.getScore();
-                        graczInfo["hangman_state"] = gracze.getHangmanState();
-                        playersInfo.append(graczInfo);
-                    }
-                    for (const auto& player: playersInRoom) {
 
-                        Json::Value guessedResponse;
-                        guessedResponse["command"] = "guessed_letter";
-                        std::string gracz = player.getName();
-                        guessedResponse["username"] = gracz;
-                        guessedResponse["succes"] = true;
-                        guessedResponse["players_info"] = playersInfo;
+                    std::string response = addresponse.toStyledString();
+                    send(events[i].data.fd, response.c_str(), response.length(), 0);
 
-                        std::string response = guessedResponse.toStyledString();
-                        send(player.getSocket(), response.c_str(), response.length(), 0);
-                    }
                     }
                 if(command == "get_players_in_room"){
                     std::string username = jsonData["username"].asString();
@@ -407,25 +391,19 @@ int main() {
                     if(room->getFirstPlayer()==username){
                         std::string word = game.getWordToGuess();
                         room->setWord(word);
-                        auto now = std::chrono::system_clock::now();
-                        std::time_t current_time = std::chrono::system_clock::to_time_t(now);
-                        std::string current_time_str = std::ctime(&current_time);
-                        current_time_str.pop_back();
-                        std::vector<Player> playersInRoom = room->getPlayers();
-                        for (const auto& player: playersInRoom) {
-                            std::string gracz = player.getName();
-                            Json::Value startResponse;
-                            startResponse["command"] = "time_end";
-                            startResponse["username"] = gracz;
-                            startResponse["word"] = word;
-                            startResponse["current_time"] = current_time_str;
-                            std::string response = startResponse.toStyledString();
-                            send(player.getSocket(), response.c_str(), response.length(), 0);
-                        }
-
-
+                        room->updateTime();
+                        Json::Value startResponse;
+                        startResponse["command"] = "time_end";
+                        startResponse["username"] = username;
+                        std::string response = startResponse.toStyledString();
+                        send(events[i].data.fd, response.c_str(), response.length(), 0);
+                    }else{
+                    Json::Value startResponse;
+                    startResponse["command"] = "time_end";
+                    startResponse["username"] = username;
+                    std::string response = startResponse.toStyledString();
+                    send(events[i].data.fd, response.c_str(), response.length(), 0);
                     }
-
 
                 }
                 if(command  == "get_room_player_info"){
@@ -445,12 +423,26 @@ int main() {
                     }
                     playersInfores["command"] = "get_players_in_room";
                     playersInfores["username"] = username;
+                    playersInfores["word"] = game.getWordToGuess();
+                    //playersInfores["time"] = room->getTime();
+                    std::unordered_set<char> gues = room->getGuessed();
+                    std::string res;
+                    for(const auto& character : gues){
+                        res += character;
+                    }
+                    playersInfores["guessed"] = res;
                     playersInfores["info"] = playersInfo;
                     std::string response = playersInfores.toStyledString();
                     send(events[i].data.fd, response.c_str(), response.length(), 0);
 
+                }
+                std::string username = jsonData["username"].asString();
+                Player* ply = game.getPlayerByUsername(username);
+                ply->updateTime();
+
             }
         }
+          game.checkandremove();
     }
 
     close(sockfd);
