@@ -82,6 +82,27 @@ std::string Game::getWordToGuess() {
 int Game::getRoomsCount() const {
     return gameRooms.size();
 }
+bool Game::doesPlayerexist(const std::string username) const {
+    return playersMap.find(username) != playersMap.end();
+}
+void Game::checkandremove(){
+    auto curtime = std::chrono::steady_clock::now();
+    for(auto it = playersMap.begin(); it != playersMap.end();)
+    {
+        auto& player = it -> second;
+        auto lastRqTime = player.getTime();
+
+        auto time = std::chrono::duration_cast<std::chrono::seconds>(curtime-lastRqTime).count();
+        if(time > 10){
+            Player* gracz = &player;
+            int id = player.getRoomId();
+            removePlayerFromRoom(id,gracz);
+            it = playersMap.erase(it);
+        }else{
+            it++;
+        }
+    }
+}
 void Game::updateGameState() {
     // Logika aktualizacji stanu gry po każdym ruchu gracza
 }
