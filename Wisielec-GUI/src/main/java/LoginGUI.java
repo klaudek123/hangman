@@ -6,22 +6,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 
 
 public class LoginGUI extends JFrame {
     private JTextField usernameField;
     private JButton loginButton;
     private Socket socket;
+    private JsonObjectReader jsonObjectReader;
     PrintWriter out;
 
-//    public LoginGUI(Socket socket) {
-//        this.socket = socket;
-    public LoginGUI() {
+    public LoginGUI(Socket socket) {
+        this.socket = socket;
+        jsonObjectReader = new JsonObjectReader();
+
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 750);
@@ -42,14 +42,13 @@ public class LoginGUI extends JFrame {
                 if (username.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Proszę podać nick.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    //TODO (zrobione) obsługa zajętego nicku
-//                  //if(! doesUsernameExist(username)){
+                  if(doesUsernameExist(username)){
                     dispose(); // Zamknij okno logowania po zalogowaniu
-                    //new LobbyGUI(username, socket);
-                    LobbyGUI lobbyGUI = new LobbyGUI(username);
-
-//                    }
-                    //JOptionPane.showMessageDialog(null, "Nick jest zajęty.", "Błąd logowania", JOptionPane.ERROR_MESSAGE);
+                    new LobbyGUI(username, socket);
+                    JOptionPane.showMessageDialog(null, "Nick jest poprawny.", "Poprawne logowanie", JOptionPane.INFORMATION_MESSAGE);
+                  }else {
+                      handleUsernameExistence(username);
+                  }
                 }
             }
         });
@@ -59,47 +58,69 @@ public class LoginGUI extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                //closeWindow();
+                closeWindow();
             }
         });
-        
+
+    }
+
+    private void handleUsernameExistence(String username) {
+        int option = JOptionPane.showConfirmDialog(
+                null,
+                "Nick jest zajęty. Czy chcesz spróbować innego?",
+                "Błąd logowania",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.ERROR_MESSAGE
+        );
+
+        if (option == JOptionPane.YES_OPTION) {
+            // Użytkownik chce spróbować ponownie
+            // Możesz dodać dowolne dodatkowe akcje tutaj
+            // Na przykład wyczyść pole usernameField i pozwól mu wprowadzić nową nazwę użytkownika.
+            new LoginGUI(socket);
+            dispose();
+        } else {
+            // Zamknij okno logowania
+            dispose();
+        }
     }
 
     private void closeWindow() {
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        dispose();
     }
 
     private boolean doesUsernameExist(String username) {
+        JSONObject jsonResponse = null; // Zadeklaruj przed try, aby była dostępna poza blokiem
+        String command = "register";
         try {
-            // Tworzymy obiekt PrintWriter do wysłania danych na serwer
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-            // Tworzymy obiekt BufferedReader do odczytu odpowiedzi z serwera
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Tworzymy obiekt JSONObject, aby sformatować zapytanie w formie JSON
+            try {
+                out = new PrintWriter(socket.getOutputStream(), true);
+            } catch (SocketException se) {
+                if (socket.isClosed()) {
+                    socket = new Socket("192.168.0.12", 8080);
+                    out = new PrintWriter(socket.getOutputStream(), true);
+                }
+            }
             JSONObject jsonRequest = new JSONObject();
-            jsonRequest.put("command", "check_existence");
-            jsonRequest.put("username", username);
 
-            // Wysyłamy zapytanie na serwer w formie JSON
+            jsonRequest.put("command", command);
+            jsonRequest.put("username", username);
+            System.out.println("request:" + jsonRequest);
+
             out.println(jsonRequest.toString());
 
-            // Odbieramy odpowiedź z serwera
-            String response = in.readLine();
+            jsonResponse = jsonObjectReader.readJsonObject(username, command, socket);
 
-            // Przetwarzamy odpowiedź (możesz przyjąć, że odpowiedź będzie w formacie JSON)
-            JSONObject jsonResponse = new JSONObject(response);
-            boolean exists = jsonResponse.getBoolean("exists");
+            if (jsonResponse != null) {
+                // Przetwarzamy odpowiedź (możesz przyjąć, że odpowiedź będzie w formacie JSON)
+                return jsonResponse.getBoolean("success");
+            }
 
-            return exists;
         } catch (IOException e) {
             e.printStackTrace();
-            return false; // Obsługa błędu - zwracamy false
         }
+
+        return false; // Obsługa błędu - zwracamy false
     }
+
 }
