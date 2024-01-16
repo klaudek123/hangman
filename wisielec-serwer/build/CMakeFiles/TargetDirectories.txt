@@ -1,0 +1,3 @@
+/home/klaudek/Pulpit/wisielec/hangman/wisielec-serwer/build/CMakeFiles/main.dir
+/home/klaudek/Pulpit/wisielec/hangman/wisielec-serwer/build/CMakeFiles/edit_cache.dir
+/home/klaudek/Pulpit/wisielec/hangman/wisielec-serwer/build/CMakeFiles/rebuild_cache.dir
