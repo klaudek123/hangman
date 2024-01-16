@@ -1,11 +1,18 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 7b1acd1d55e2cb781d21ffee79a38f4acf369450
     "configurations": [
         {
             "name": "linux-gcc-x64",
             "includePath": [
                 "${workspaceFolder}/**",
+<<<<<<< HEAD
                 "${workspaceFolder}/json/include"
+=======
+                "${workspaceFolder}/include"
+>>>>>>> 7b1acd1d55e2cb781d21ffee79a38f4acf369450
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "${default}",
@@ -14,6 +21,7 @@
             "compilerArgs": [
                 ""
             ]
+<<<<<<< HEAD
         },
         {
             "name": "libjsoncpp-dev",
@@ -44,4 +52,9 @@
   ],
   "version": 4
 >>>>>>> fc9befa1b24704baa5dfed87e56f335d7acf85b3
+=======
+        }
+    ],
+    "version": 4
+>>>>>>> 7b1acd1d55e2cb781d21ffee79a38f4acf369450
 }

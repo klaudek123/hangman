@@ -338,7 +338,7 @@ int createSocket(int port) {
 }
 
 int main() {
-    int sockfd = createSocket(8080); // Przykładowy port 50000
+    int sockfd = createSocket(8080); 
     int epollfd = epoll_create1(0);
     if (epollfd == -1) {
         perror("Błąd epoll_create1()");
